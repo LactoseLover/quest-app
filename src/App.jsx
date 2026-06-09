@@ -9,6 +9,9 @@ export default function App() {
     createTask("Build task list", 50),
     createTask("Submit project", 120, "2026-05-25")
   ])
+  const [newTitle, setNewTitle] = useState("")
+  const [newXP, setNewXP] = useState(50)
+  const [newDeadline, setNewDeadline] = useState("")
 
   function handleComplete(task) {
     const updatedProfile = completeTask(profile, task)
@@ -25,12 +28,51 @@ export default function App() {
     setProfile(updatedProfile)
     setTasks(updatedTasks)
   }
+  function handleAddTask() {
+    if (newTitle.trim() === "") return  // don't add empty tasks
+
+    const task = createTask(
+      newTitle,
+      Number(newXP),
+      newDeadline === "" ? null : newDeadline
+    )
+    setTasks([...tasks, task])
+    setNewTitle("")
+    setNewXP(50)
+    setNewDeadline("")
+  }
 
   return (
     <div>
       <h1>Level {profile.level}</h1>
       <p>XP: {profile.currentXP}</p>
 
+      <div>
+        <h2>Add New Quest</h2>
+
+        <input
+          type="text"
+          placeholder="Task title"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+        />
+
+        <input
+          type="number"
+          placeholder="XP reward"
+          value={newXP}
+          onChange={(e) => setNewXP(e.target.value)}
+        />
+
+        <input
+          type="date"
+          value={newDeadline}
+          onChange={(e) => setNewDeadline(e.target.value)}
+        />
+
+        <button onClick={handleAddTask}>Add Quest</button>
+      </div>
+      
       {tasks.map(task => (
         <div key={task.id}>
           <h3>{isBossFight(task) ? "⚠ BOSS: " : ""}{task.title}</h3>
