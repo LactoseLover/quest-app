@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { defaultProfile, applyXP, completeTask, failTask } from './logic/xp'
 import { createTask, markComplete, markFailed, isOverdue, isBossFight } from './logic/tasks'
+import { createEntry } from './logic/journal'
 
 export default function App() {
   const [profile, setProfile] = useState(defaultProfile)
@@ -12,6 +13,8 @@ export default function App() {
   const [newTitle, setNewTitle] = useState("")
   const [newXP, setNewXP] = useState(50)
   const [newDeadline, setNewDeadline] = useState("")
+  const [entries, setEntries] = useState([])
+  const [journalText, setJournalText] = useState("")
 
   function handleComplete(task) {
     const updatedProfile = completeTask(profile, task)
@@ -40,6 +43,19 @@ export default function App() {
     setNewTitle("")
     setNewXP(50)
     setNewDeadline("")
+  }
+
+  function handleAddEntry() {
+    if (journalText.trim() === "") return
+
+    const entry = createEntry(journalText)
+    setEntries([...entries, entry])
+    setJournalText("")
+
+    // auto-delete this entry after 4 hours
+    setTimeout(() => {
+      setEntries(prev => prev.filter(e => e.id !== entry.id))
+    }, 4 * 60 * 60 * 1000)
   }
 
   return (
@@ -72,7 +88,27 @@ export default function App() {
 
         <button onClick={handleAddTask}>Add Quest</button>
       </div>
-      
+
+      <div>
+        <h2>Brain Dump</h2>
+        <p>Entries delete after 4 hours.</p>
+
+        <textarea
+          placeholder="Dump your thoughts..."
+          value={journalText}
+          onChange={(e) => setJournalText(e.target.value)}
+        />
+
+        <button onClick={handleAddEntry}>Dump It</button>
+
+        {entries.map(entry => (
+          <div key={entry.id}>
+            <p>{entry.content}</p>
+            <small>Expires: {new Date(entry.expiresAt).toLocaleTimeString()}</small>
+          </div>
+        ))}
+      </div>
+
       {tasks.map(task => (
         <div key={task.id}>
           <h3>{isBossFight(task) ? "⚠ BOSS: " : ""}{task.title}</h3>
