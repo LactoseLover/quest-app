@@ -1,7 +1,6 @@
 export const defaultProfile = {
   level: 1,
   currentXP: 0,
-  xpToNextLevel: 100,
 }
 
 export function xpToNextLevel(level) {
@@ -9,31 +8,25 @@ export function xpToNextLevel(level) {
 }
 
 export function applyXP(profile, amount) {
-    const newXP = profile.currentXP + amount
-    const needed = xpToNextLevel(profile.level)
-
-    if (newXP >= needed) {
-
-        return {
-            ...profile, 
-            level: profile.level+1,
-            currentXP: newXP - needed,
-        }
-    }
-    return {
-        ...profile,
-        currentXP: newXP,
-    }
+  let currentXP = profile.currentXP + amount
+  let level = profile.level
+ 
+  while (currentXP >= xpToNextLevel(level)) {
+    currentXP -= xpToNextLevel(level)
+    level += 1
+  }
+ 
+  return { ...profile, level, currentXP }
 }
 
 export function completeTask(profile, task) {
-    return applyXP(profile, task.xpReward)
+  return applyXP(profile, task.xpReward)
 }
 
 export function failTask(profile, task) {
-    const newXP = Math.max(0, profile.currentXP - task.xpPenalty)
-    return {
-        ...profile,
-        currentXP: newXP
-    }
+  const newXP = Math.max(0, profile.currentXP - task.xpPenalty)
+  return {
+    ...profile,
+    currentXP: newXP,
+  }
 }
