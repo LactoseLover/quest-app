@@ -30,12 +30,18 @@ function getNow() {
 }
 
 export default function App() {
-  const [profile, setProfile] = useState(defaultProfile)
-  const [tasks, setTasks] = useState([
-    createTask("Learn useState", 50),
-    createTask("Build task list", 80),
-    createTask("Submit portfolio project", 120, new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0]),
-  ])
+  const [profile, setProfile] = useState(() => {
+    const saved = localStorage.getItem('profile')
+    return saved ? JSON.parse(saved) : defaultProfile
+  })
+  const [tasks, setTasks] = useState(() => {
+    const saved = localStorage.getItem('tasks')
+    return saved ? JSON.parse(saved) : [
+      createTask("Learn useState", 50),
+      createTask("Build task list", 80),
+      createTask("Submit portfolio project", 120, new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0]),
+    ]
+  })
   const [newTitle, setNewTitle] = useState("")
   const [newXP, setNewXP] = useState(50)
   const [newDeadline, setNewDeadline] = useState("")
@@ -50,6 +56,18 @@ export default function App() {
     const interval = setInterval(() => setTick(t => t + 1), 60000)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    localStorage.setItem('profile', JSON.stringify(profile))
+  }, [profile])
+
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks))
+  }, [tasks])
+
+  if (showLanding) {
+    return <Landing onEnter={() => setShowLanding(false)} />
+  }
 
   function showNotif(msg, type = 'success') {
     setNotification({ msg, type })
@@ -109,10 +127,6 @@ export default function App() {
   const today = new Date().getDate()
   const taskDays = new Set(tasks.map(t => t.deadline ? new Date(t.deadline).getDate() : null).filter(Boolean))
   const bossDays = new Set(tasks.filter(isBossFight).map(t => new Date(t.deadline).getDate()))
-
-  if (showLanding) {
-    return <Landing onEnter={() => setShowLanding(false)} />
-  }
 
   return (
     <div className="app">
